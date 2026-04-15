@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="title" content="Seek-and-Solve: Benchmarking MLLMs for Visual Clue-Driven Reasoning in Daily Scenarios">
+  <meta name="description"
+    content="We introduce DailyClue, a benchmark designed for visual clue-driven reasoning in daily scenarios.">
+  <meta name="keywords" content="DailyClue, MLLM, Visual Reasoning, Benchmark, Multimodal, ACL">
+  <meta name="author" content="Xiaomin Li, Tala Wang, Zichen Zhong, Ying Zhang, Zirui Zheng, Takashi Isobe, Dezhuang Li, Huchuan Lu, You He, Xu Jia">
+
+  <meta property="og:title" content="Seek-and-Solve: DailyClue Benchmark">
+  <meta property="og:image" content="static/images/teaser.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="static/images/teaser.png">
+
+  <title>Seek-and-Solve: DailyClue Benchmark</title>
+
+  <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <style>
+    /* === 1. Cyber Title Style === */
+    @keyframes gradient-move {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .cyber-title {
+      background-image: linear-gradient(90deg, #ff00cc 0%, #3333ff 50%, #00ccff 100%);
+      background-size: 400% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+      animation: gradient-move 5s ease infinite;
+      font-weight: 800;
+      filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1));
+      font-size: clamp(1.5rem, 3vw, 2.48rem) !important;
+      line-height: 1.2;
+      padding-bottom: 5px;
+    }
+
+    /* === 2. Table Style === */
+    .table-container {
+      overflow-x: auto;
+    }
+
+    .table.is-small th,
+    .table.is-small td {
+      padding: 0.8em 1.0em;
+      font-size: 0.9rem;
+    }
+
+    .table th {
+      background-color: #f5f5f5;
+      color: #363636;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    .table td {
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .table td:first-child {
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .best-score {
+      font-weight: bold;
+      color: #d32f2f;
+    }
+
+    .second-best {
+      text-decoration: underline;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .section-header-row {
+      background-color: #e8e8e8 !important;
+      font-weight: bold;
+      text-align: center;
+      color: #333;
+    }
+
+
+
+    .carousel-wrapper {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+
+    .slider-container {
+      position: relative;
+      width: 100%;
+      height: 550px;
+      background: transparent;
+      overflow: hidden;
+    }
+
+
+    .slides-wrapper {
+      display: none;
+      height: 100%;
+      width: 100%;
+      align-items: center;
+      justify-content: center;
+      animation: fade 0.8s ease-in-out;
+    }
+
+    .slides-wrapper img {
+      max-height: 100%;
+      max-width: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.1));
+    }
+
+
+    .prev-btn,
+    .next-btn {
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      width: 50px;
+      height: 50px;
+      margin-top: -25px;
+
+      background-color: rgba(200, 200, 200, 0.3);
+      color: #333;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(5px);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 20px;
+      transition: all 0.3s ease;
+      z-index: 20;
+      user-select: none;
+    }
+
+
+    .prev-btn:hover,
+    .next-btn:hover {
+      background-color: #3273dc;
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(50, 115, 220, 0.3);
+    }
+
+
+    .prev-btn {
+      left: -70px;
+    }
+
+    .next-btn {
+      right: -70px;
+    }
+
+
+    @media screen and (max-width: 1100px) {
+      .carousel-wrapper {
+        max-width: 100%;
+        padding: 0 10px;
+      }
+
+      .prev-btn {
+        left: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+      }
+
+      .next-btn {
+        right: 10px;
+        background-color: rgba(255, 255, 255, 0.8);
+      }
+    }
+
+
+    .dots-container {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      z-index: 10;
+    }
+
+    .dot {
+      cursor: pointer;
+      height: 10px;
+      width: 10px;
+      margin: 0 6px;
+      background-color: rgba(0, 0, 0, 0.15);
+      border-radius: 50%;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+
+    .active-dot,
+    .dot:hover {
+      background-color: #3273dc;
+      transform: scale(1.2);
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0.4;
+        transform: scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  </style>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+</head>
+
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title cyber-title">
+            Seek-and-Solve: Benchmarking MLLMs for <br>
+            Visual Clue-Driven Reasoning in Daily Scenarios
+          </h1>
+          
+          <div class="is-size-5 publication-authors" style="margin-bottom: 0px;">
+            <span class="author-block">Xiaomin Li<sup>1,*</sup>,</span>
+            <span class="author-block">Tala Wang<sup>1,*</sup>,</span>
+            <span class="author-block">Zichen Zhong<sup>1,*</sup>,</span>
+            <span class="author-block">Ying Zhang<sup>2</sup>,</span>
+            <span class="author-block">Zirui Zheng<sup>1</sup>,</span>
+            <span class="author-block">Takashi Isobe<sup>3</sup>,</span>
+            <span class="author-block">Dezhuang Li<sup>1</sup>,</span>
+            <span class="author-block">Huchuan Lu<sup>1</sup>,</span>
+            <span class="author-block">You He<sup>3</sup>,</span>
+            <span class="author-block">Xu Jia<sup>1,†</sup></span>
+          </div>
+
+          <div class="is-size-5 publication-authors" style="margin-top: 0px; margin-bottom: 0px;">
+            <span class="author-block"><sup>1</sup>Dalian University of Technology,</span>
+            <span class="author-block"><sup>2</sup>WeChat, Tencent Inc.,</span>
+            <span class="author-block"><sup>3</sup>Tsinghua University</span>
+          </div>
+
+          <div class="is-size-6 publication-authors" style="margin-top: 6px; color: #666; line-height: 1.3;">
+            <span class="author-block"><sup>*</sup>Equal contribution.</span><br>
+            <span class="author-block"><sup>†</sup>Corresponding author.</span>
+          </div>
+          <div class="column has-text-centered" style="margin-top: 20px;">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fab fa-github"></i></span><span>Code</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="far fa-images"></i></span><span>Data</span>
+                </a>
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <img src="static/images/teaser.png" alt="DailyClue Overview"
+          style="width: 100%; border-radius: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);">
+        <h2 class="subtitle has-text-centered" style="margin-top: 15px;">
+          <span class="dnerf">DailyClue</span> is a benchmark designed for visual clue-driven reasoning in daily
+          scenarios.
+        </h2>
+      </div>
+    </div>
+  </section>
+
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Daily scenarios are characterized by visual richness, requiring Multimodal Large Language Models (MLLMs)
+              to filter noise and identify decisive visual clues for accurate reasoning. Yet, current benchmarks
+              predominantly aim at evaluating MLLMs' pre-existing knowledge or perceptual understanding, often
+              neglecting the critical capability of reasoning.
+            </p>
+            <p>
+              To bridge this gap, we introduce <strong>DailyClue</strong>, a benchmark designed for visual clue-driven
+              reasoning in daily scenarios. Our construction is guided by two core principles: (1) strict grounding in
+              authentic daily activities, and (2) challenging query design that necessitates more than surface-level
+              perception. Instead of simple recognition, our questions compel MLLMs to actively explore suitable visual
+              clues and leverage them for subsequent reasoning. To this end, we curate a comprehensive dataset spanning
+              four major daily domains and 16 distinct subtasks.
+            </p>
+            <p>
+              Comprehensive evaluation across MLLMs and agentic models underscores the formidable challenge posed by our
+              benchmark. Our analysis reveals several critical insights, emphasizing that the accurate identification of
+              visual clues is essential for robust reasoning.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Data Construction Pipeline</h2>
+          <div class="content has-text-justified">
+            <p>
+              We employ a carefully controlled generation and filtering pipeline to ensure high-quality,
+              reasoning-intensive questions. The process involves candidate triplet generation by top-tier MLLMs,
+              followed by multi-model verification and rigorous human cross-checks.
+            </p>
+            <img src="static/images/pipeline.png" alt="Construction Pipeline"
+              style="width: 100%; margin-top: 20px; border: 1px solid #e1e1e1; border-radius: 8px;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Reasoning Examples</h2>
+          <p class="subtitle is-6">
+            DailyClue features four daily life scenarios across 16 reasoning subtasks. Click arrows to navigate.
+          </p>
+
+          <div class="carousel-wrapper">
+
+            <button class="prev-btn" onclick="plusSlides(-1)">
+              <i class="fas fa-angle-left"></i>
+            </button>
+            <button class="next-btn" onclick="plusSlides(1)">
+              <i class="fas fa-angle-right"></i>
+            </button>
+
+            <div class="slider-container">
+              <div class="slides-wrapper" style="display: flex;">
+                <img src="static/images/example1.png" alt="Example 1">
+              </div>
+              <div class="slides-wrapper">
+                <img src="static/images/example2.png" alt="Example 2">
+              </div>
+              <div class="slides-wrapper">
+                <img src="static/images/example3.png" alt="Example 3">
+              </div>
+              <div class="slides-wrapper">
+                <img src="static/images/example4.png" alt="Example 4">
+              </div>
+
+              <div class="dots-container">
+                <span class="dot active-dot" onclick="currentSlide(1)"></span>
+                <span class="dot" onclick="currentSlide(2)"></span>
+                <span class="dot" onclick="currentSlide(3)"></span>
+                <span class="dot" onclick="currentSlide(4)"></span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Performance Comparison</h2>
+          <div class="content has-text-justified">
+            <p>
+              Performance comparison on the DailyClue benchmark. Metrics denote accuracy (%). The best result is
+              highlighted in <span class="best-score">bold red</span>, and the second best is <span
+                class="second-best">underlined</span>.
+            </p>
+          </div>
+
+          <div class="table-container">
+            <table class="table is-bordered is-striped is-hoverable is-fullwidth is-small">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Overall</th>
+                  <th>Location<br>Identification</th>
+                  <th>Spatial<br>Relationship</th>
+                  <th>Daily<br>Commonsense</th>
+                  <th>Scientific<br>Commonsense</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="section-header-row">
+                  <td colspan="6">Open-source MLLMs</td>
+                </tr>
+                <tr>
+                  <td>LLaVA-OneVision-7B</td>
+                  <td>24.47</td>
+                  <td>10.50</td>
+                  <td>34.97</td>
+                  <td>25.56</td>
+                  <td>31.71</td>
+                </tr>
+                <tr>
+                  <td>LLaVA-OneVision-72B</td>
+                  <td>33.18</td>
+                  <td>15.50</td>
+                  <td>47.85</td>
+                  <td>33.33</td>
+                  <td>42.28</td>
+                </tr>
+                <tr>
+                  <td>LLaVA-OneVision-1.5-8B-Instruct</td>
+                  <td>29.43</td>
+                  <td>10.50</td>
+                  <td>47.85</td>
+                  <td>27.78</td>
+                  <td>38.21</td>
+                </tr>
+                <tr>
+                  <td>InternVL3-8B</td>
+                  <td>31.08</td>
+                  <td>13.50</td>
+                  <td>31.67</td>
+                  <td>31.67</td>
+                  <td>41.46</td>
+                </tr>
+                <tr>
+                  <td>InternVL3-38B</td>
+                  <td>36.94</td>
+                  <td>17.00</td>
+                  <td>47.85</td>
+                  <td>47.22</td>
+                  <td>39.84</td>
+                </tr>
+                <tr>
+                  <td>InternVL3-78B</td>
+                  <td>40.84</td>
+                  <td>18.00</td>
+                  <td class="best-score">54.60</td>
+                  <td class="second-best">52.78</td>
+                  <td>42.28</td>
+                </tr>
+                <tr>
+                  <td>InternVL-3.5-38B</td>
+                  <td>36.91</td>
+                  <td>14.00</td>
+                  <td class="second-best">49.69</td>
+                  <td>43.33</td>
+                  <td>43.90</td>
+                </tr>
+                <tr>
+                  <td>Qwen2.5-VL-7B</td>
+                  <td>30.63</td>
+                  <td>15.00</td>
+                  <td>39.88</td>
+                  <td>37.22</td>
+                  <td>34.15</td>
+                </tr>
+                <tr>
+                  <td>Qwen2.5-VL-32B</td>
+                  <td>35.59</td>
+                  <td>21.50</td>
+                  <td>42.94</td>
+                  <td>42.78</td>
+                  <td>38.21</td>
+                </tr>
+                <tr>
+                  <td>Qwen2.5-VL-72B</td>
+                  <td class="second-best">40.84</td>
+                  <td class="best-score">24.50</td>
+                  <td>47.85</td>
+                  <td>48.33</td>
+                  <td>47.15</td>
+                </tr>
+                <tr>
+                  <td>Qwen3-VL-235B-A22B-Thinking</td>
+                  <td class="best-score">44.59</td>
+                  <td class="second-best">23.00</td>
+                  <td>49.08</td>
+                  <td class="best-score">56.67</td>
+                  <td class="best-score">56.10</td>
+                </tr>
+                <tr>
+                  <td>Qwen3-VL-235B-A22B-Instruct</td>
+                  <td>40.69</td>
+                  <td>22.50</td>
+                  <td>46.63</td>
+                  <td>50.00</td>
+                  <td class="second-best">48.78</td>
+                </tr>
+
+                <tr class="section-header-row">
+                  <td colspan="6">Close-source MLLMs</td>
+                </tr>
+                <tr>
+                  <td>🥉 Gemini-2.5-Flash</td>
+                  <td>50.00</td>
+                  <td>32.50</td>
+                  <td>55.83</td>
+                  <td class="second-best">59.44</td>
+                  <td>56.91</td>
+                </tr>
+                <tr>
+                  <td>🥇 Gemini-2.5-Pro</td>
+                  <td class="best-score">56.90</td>
+                  <td class="best-score">41.50</td>
+                  <td class="best-score">61.35</td>
+                  <td class="best-score">62.77</td>
+                  <td class="best-score">67.48</td>
+                </tr>
+                <tr>
+                  <td>Claude-3.7-Sonnet</td>
+                  <td>41.14</td>
+                  <td>18.50</td>
+                  <td>57.06</td>
+                  <td>47.22</td>
+                  <td>47.97</td>
+                </tr>
+                <tr>
+                  <td>Claude-sonnet-4</td>
+                  <td>41.74</td>
+                  <td>22.00</td>
+                  <td>52.15</td>
+                  <td>48.89</td>
+                  <td>49.59</td>
+                </tr>
+                <tr>
+                  <td>Claude-sonnet-4.5</td>
+                  <td>41.74</td>
+                  <td>21.00</td>
+                  <td>53.99</td>
+                  <td>49.44</td>
+                  <td>47.97</td>
+                </tr>
+                <tr>
+                  <td>o4-mini</td>
+                  <td>47.00</td>
+                  <td>25.50</td>
+                  <td class="second-best">58.28</td>
+                  <td>58.33</td>
+                  <td>50.41</td>
+                </tr>
+                <tr>
+                  <td>🥈 GPT-5</td>
+                  <td class="second-best">50.90</td>
+                  <td class="second-best">38.00</td>
+                  <td>57.67</td>
+                  <td>51.67</td>
+                  <td class="second-best">61.79</td>
+                </tr>
+
+                <tr class="section-header-row">
+                  <td colspan="6">Agentic Models</td>
+                </tr>
+                <tr>
+                  <td>DeepEyes-7B</td>
+                  <td>30.93</td>
+                  <td>18.50</td>
+                  <td class="second-best">44.17</td>
+                  <td>30.00</td>
+                  <td>34.96</td>
+                </tr>
+                <tr>
+                  <td>VLM-R3</td>
+                  <td>33.18</td>
+                  <td class="second-best">19.00</td>
+                  <td>42.33</td>
+                  <td class="second-best">36.11</td>
+                  <td class="second-best">39.84</td>
+                </tr>
+                <tr>
+                  <td>TreeVGR-7B</td>
+                  <td>27.78</td>
+                  <td>14.00</td>
+                  <td>40.49</td>
+                  <td>27.18</td>
+                  <td>33.33</td>
+                </tr>
+                <tr>
+                  <td>REVPT</td>
+                  <td>25.83</td>
+                  <td>6.50</td>
+                  <td>38.04</td>
+                  <td>32.22</td>
+                  <td>31.71</td>
+                </tr>
+                <tr>
+                  <td>Thyme</td>
+                  <td class="best-score">46.25</td>
+                  <td class="best-score">69.00</td>
+                  <td>42.33</td>
+                  <td>29.44</td>
+                  <td>39.02</td>
+                </tr>
+                <tr>
+                  <td>PyVision</td>
+                  <td class="second-best">39.48</td>
+                  <td>18.50</td>
+                  <td class="best-score">47.23</td>
+                  <td class="best-score">48.33</td>
+                  <td class="best-score">50.40</td>
+                </tr>
+
+                <tr class="section-header-row">
+                  <td colspan="6">Human Baseline</td>
+                </tr>
+                <tr>
+                  <td>Human Baseline</td>
+                  <td>45.50</td>
+                  <td>19.33</td>
+                  <td>70.67</td>
+                  <td>40.00</td>
+                  <td>52.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- ================= 新增的 Insights 区域开始 ================= -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Further Insights: The Power of Visual Clues</h2>
+
+          <!-- Insight 1 & Table 3 -->
+          <div class="content has-text-justified" style="margin-bottom: 3rem;">
+            <h3 class="title is-4">Insight 1: Probing MLLMs with Explicit Clues</h3>
+            <p>
+              Despite strong reasoning capabilities, MLLMs' performance is heavily bottlenecked by the failure to capture
+              critical visual semantics. Providing Ground Truth (GT) clues yields substantial gains. However, models are
+              vulnerable to <em>visual sycophancy</em>—misleading textual clues can override their own visual judgment and
+              induce hallucinations.
+            </p>
+
+            <div class="table-container" style="margin-top: 1.5rem;">
+              <table class="table is-bordered is-striped is-hoverable is-fullwidth is-small">
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="vertical-align: middle;">Model</th>
+                    <th colspan="5">Clue Source</th>
+                  </tr>
+                  <tr>
+                    <th>Qwen2.5-VL-72B</th>
+                    <th>Claude-3.7</th>
+                    <th>Gemini-2.5-Pro</th>
+                    <th>GT Clue</th>
+                    <th>No Clue</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Qwen2.5-VL-72B</strong></td>
+                    <td>40.09 <span style="color: #d32f2f; font-size: 0.85em;">(-0.75)</span></td>
+                    <td>41.29 <span style="color: #388e3c; font-size: 0.85em;">(+0.45)</span></td>
+                    <td>48.80 <span style="color: #388e3c; font-size: 0.85em;">(+7.96)</span></td>
+                    <td><strong>51.50</strong> <span style="color: #388e3c; font-size: 0.85em;">(+10.66)</span></td>
+                    <td>40.84</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Claude-3.7</strong></td>
+                    <td>42.49 <span style="color: #388e3c; font-size: 0.85em;">(+1.35)</span></td>
+                    <td>43.39 <span style="color: #388e3c; font-size: 0.85em;">(+2.25)</span></td>
+                    <td>51.95 <span style="color: #388e3c; font-size: 0.85em;">(+10.81)</span></td>
+                    <td><strong>56.00</strong> <span style="color: #388e3c; font-size: 0.85em;">(+14.86)</span></td>
+                    <td>41.14</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Gemini-2.5-Pro</strong></td>
+                    <td>52.85 <span style="color: #d32f2f; font-size: 0.85em;">(-4.05)</span></td>
+                    <td>53.15 <span style="color: #d32f2f; font-size: 0.85em;">(-3.75)</span></td>
+                    <td>55.26 <span style="color: #d32f2f; font-size: 0.85em;">(-1.64)</span></td>
+                    <td><strong>58.55</strong> <span style="color: #388e3c; font-size: 0.85em;">(+1.65)</span></td>
+                    <td>56.90</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Insight 2 & Figure 6 -->
+          <div class="content has-text-justified" style="margin-bottom: 3rem;">
+            <h3 class="title is-4">Insight 2: Efficacy of Visual Clue-Driven Reasoning</h3>
+            <p>
+              Mandating active visual clues within the Chain-of-Thought (CoT) acts as a critical anchor. This constraint
+              effectively mitigates reasoning drift. Across different model scales, explicitly prompting models to actively
+              seek visual clues (Our Clue-guided CoT) consistently outperforms vanilla reasoning baselines.
+            </p>
+            <div class="columns is-centered">
+              <div class="column is-eight-fifths has-text-centered">
+                <img src="static/images/figure6.png" alt="Figure 6" style="width: 60%; border-radius: 8px;">
+              </div>
+            </div>
+          </div>
+
+          <!-- Insight 3 & Figure 7 -->
+          <div class="content has-text-justified">
+            <h3 class="title is-4">Insight 3: Rigorous Evaluation — Right Answer, Wrong Reason?</h3>
+            <p>
+              Superficial accuracy may belie a disconnect between reasoning and prediction. Under our <strong>Rigorous
+                Evaluation Protocol</strong> (which requires semantic intersection between predicted clues and GT clues),
+              models like Qwen2.5-VL-72B and Claude-3.7 show noticeable accuracy drops, indicating occasional reliance on
+              illusionary or useless clues. Gemini-2.5-Pro demonstrated the highest reasoning fidelity with a negligible
+              drop of only 0.44%.
+            </p>
+            <div class="columns is-centered">
+              <div class="column is-eight-fifths has-text-centered">
+                <img src="static/images/figure7.png" alt="Figure 7" style="width: 60%; border-radius: 8px;">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ================= 新增的 Insights 区域结束 ================= -->
+
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>@article{dailyclue2026,
+  title={Seek-and-Solve: Benchmarking MLLMs for Visual Clue-Driven Reasoning in Daily Scenarios},
+  author={Anonymous Authors},
+  year={2026}
+}</code></pre>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content has-text-centered">
+            <p>
+              This page was built using the
+              <a href="https://github.com/eliahuhorwitz/Academic-project-page-template" target="_blank">Academic Project
+                Page Template</a>
+              which was adopted from the <a href="https://nerfies.github.io/" target="_blank">Nerfies</a> project page.
+              It also incorporates design elements from <a href="https://evolvinglmms-lab.github.io/LongVT/"
+                target="_blank">LongVT</a>.
+              <br>
+              You are free to borrow the source code of this website, we just ask that you link back to these pages in
+              the footer.
+              <br>
+              This website is licensed under a
+              <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons
+                Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let slideIndex = 1;
+    showSlides(slideIndex);
+
+    function plusSlides(n) { showSlides(slideIndex += n); }
+    function currentSlide(n) { showSlides(slideIndex = n); }
+
+    function showSlides(n) {
+      let i;
+      let slides = document.getElementsByClassName("slides-wrapper");
+      let dots = document.getElementsByClassName("dot");
+      if (n > slides.length) { slideIndex = 1 }
+      if (n < 1) { slideIndex = slides.length }
+
+      for (i = 0; i < slides.length; i++) { slides[i].style.display = "none"; }
+      for (i = 0; i < dots.length; i++) { dots[i].className = dots[i].className.replace(" active-dot", ""); }
+
+      slides[slideIndex - 1].style.display = "flex";
+      dots[slideIndex - 1].className += " active-dot";
+    }
+  </script>
+
+</body>
+
+</html>
