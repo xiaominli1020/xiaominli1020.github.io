@@ -41,6 +41,7 @@ My current research interests primarily focus on **Video/Image Generation** and 
 [[**Project Page**](https://xiaominli1020.github.io/DailyClue/)]
 [[**Code**](https://xiaominli1020.github.io/DailyClue/)]
 [[**Paper**](https://arxiv.org/abs/2604.14041)]
+[[**HuggingFace**](https://huggingface.co/datasets/Crysun/DailyClue)]
 </div>
 </div>
 
@@ -117,6 +118,7 @@ Jianbin Zhao<sup>\*</sup>, Chaoran Feng<sup>\*</sup>, Miao Yu<sup>\*</sup>, Ying
 [CharacterFactory: Sampling Consistent Characters with GANs for Diffusion Models](https://qinghew.github.io/CharacterFactory/)
 
 Qinghe Wang, Baolu Li, **Xiaomin Li**, Bing Cao, Liqian Ma, Huchuan Lu, Xu jia✉.
+
 <sup>✉</sup>Corresponding Author
 
 <!-- [**Project**](https://scholar.google.com/citations?view_op=view_citation&hl=zh-CN&user=DhtAFkwAAAAJ&citation_for_view=DhtAFkwAAAAJ:ALROH1vI_8AC) <strong><span class='show_paper_citations' data='DhtAFkwAAAAJ:ALROH1vI_8AC'></span></strong>
