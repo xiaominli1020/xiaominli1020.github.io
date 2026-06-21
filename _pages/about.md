@@ -22,6 +22,7 @@ My current research interests primarily focus on **Video/Image Generation** and 
 
 
 # 🔥 News
+- *2026.06*: &nbsp;🎉🎉 Two papers are accepted by ECCV 2026.
 - *2026.04*: &nbsp;🎉🎉 One Paper is accepted by ACL Findings 2026. 
 - *2026.03*: &nbsp;🎉🎉 One Paper is accepted by CVPR 2026.
 - *2025.06*: &nbsp;🎉🎉 One Paper is accepted by ICCV 2025.
